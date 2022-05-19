@@ -1,0 +1,15 @@
+{
+  "name": "@metric-im/componentry",
+  "version": "1.0.0",
+  "description": "Runtime framework for merging metric modules",
+  "main": "index.mjs",
+  "scripts": {
+  },
+  "author": "Michael Sprague",
+  "license": "MIT",
+  "keywords": [],
+  "dependencies": {
+    "express": "^4.17.3",
+    "mongodb": "^4.6.0"
+  }
+}
