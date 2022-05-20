@@ -26,7 +26,7 @@ export default class HotMods {
         // From arguments load modules, their components, routes and library
         for (let module of Array.from(arguments)) {
             let instance = module.mint?(await module.mint(this.connector)):(new module(this.connector));
-            this.modules[module.constructor.name] = {module:instance,path:path.dirname(fileURLToPath(import.meta.url))};
+            this.modules[module.name] = {module:instance,path:path.dirname(fileURLToPath(import.meta.url))};
             this.loadComponents(instance.componentPath);
             if (instance.routes) this.loadRoutes(instance.routes());
             if (instance.library) this.loadLibrary(instance.library);
