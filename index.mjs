@@ -4,7 +4,7 @@ import Connector from './Connector.mjs';
 import path from "path";
 import {fileURLToPath} from "url";
 
-export default class HotMods {
+export default class Componentry {
     constructor(app,profile,options) {
         this.profile = profile;
         this.options = options||{};
