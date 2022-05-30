@@ -112,4 +112,18 @@ export default class Component {
             return o;
         }
     }
+
+    /**
+     * Init attaches the global utilities for popups and toasts.
+     * @param element
+     * @returns {Promise<void>}
+     */
+    static async init(element) {
+        let Popup = await import('./Popup.mjs');
+        let Toast = await import('./Toast.mjs');
+        window.popup = new Popup.default();
+        await window.popup.render(element);
+        window.toast = new Toast.default();
+        await window.toast.render(element);
+    }
 }

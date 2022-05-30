@@ -1,0 +1,24 @@
+.display {
+    position:absolute;
+    border:2px solid var(--status-normal);
+    border-radius:var(--spacer);
+    padding:var(--spacer);
+    background-color:var(--page-bg);
+    text-align:center;
+    width:20%;
+    left:40%;
+    top:-200px;
+    transition:all 200ms;
+}
+.display.active {
+    top:30px;
+}
+.display.warning {
+    border-color:var(--status-warning);
+}
+.display.error {
+    border-color:var(--status-error);
+}
+.display.success {
+    border-color:var(--status-success);
+}
