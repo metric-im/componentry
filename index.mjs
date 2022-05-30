@@ -77,15 +77,7 @@ export default class Componentry {
             if (req.params.path) path += req.params.path;
             if (!path) return res.status(404).send();
             res.set("Content-Type","text/javascript");
-            if (['firemacro','identifier'].includes(req.params.module)) {
-                // rewrite module notation
-                let js = fs.readFileSync(path).toString();
-                js = js.replace(/^module\.exports.*?=/m,"export default");
-                res.send(js);
-            } else {
-                // push file as is
-                res.sendFile(path);
-            }
+            res.sendFile(path);
         });
         return router;
     }
