@@ -1,10 +1,12 @@
 .display {
+    display:flex;
+    flex-direction: column;
+    align-items:center;
     position:absolute;
     border:2px solid var(--status-normal);
     border-radius:var(--spacer);
-    padding:var(--spacer);
+    padding:var(--spacer2);
     background-color:var(--page-bg);
-    text-align:center;
     width:20%;
     left:40%;
     top:-200px;
@@ -21,4 +23,33 @@
 }
 .display.success {
     border-color:var(--status-success);
+}
+
+.display .message {
+    flex:1 0;
+    text-align:center;
+}
+.display .controls {
+    display:none;
+    margin-top:var(--spacer);
+    flex-direction: row;
+    flex:1 0;
+}
+.display.prompt .controls {
+    display: flex;
+}
+.display .controls button {
+    border:2px solid var(--page-border);
+    background-color:var(--tray-bg);
+    border-radius:8px;
+    padding:2px 6px;
+    cursor:pointer;
+    color:var(--text-color);
+    white-space: nowrap;
+    min-width:80px;
+    margin:var(--spacer);
+    padding:var(--spacerhalf);
+}
+.display .controls button:hover {
+    background-color:var(--page-action);
 }

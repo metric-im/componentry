@@ -8,6 +8,7 @@ export default class Component {
         this.element.classList.add(this.constructor.name);
         this.components = [];
         this.watchers={};
+        this.lock = new Lock(this);
         this.hub=false;
     }
     new(Comp,props) {
@@ -92,6 +93,7 @@ export default class Component {
         }
     }
 
+
     /**
      * Data state is maintained by reference. Sometimes local variables need
      * to be added to the results. These are prefaced with double underscore,
@@ -125,5 +127,50 @@ export default class Component {
         await window.popup.render(element);
         window.toast = new Toast.default();
         await window.toast.render(element);
+    }
+}
+
+/**
+ * Locks are used to warn against actions like saving or exiting
+ * when a component is in an inappropriate state
+ **/
+class Lock {
+    constructor(comp) {
+        this.comp = comp;
+        this.locks = {};
+    }
+    async test(action) {
+        if (!this.find(action)) return true
+        else return await ({
+            save:async ()=>{
+                window.toast.warning("Please complete editing before saving");
+                return false;
+            },
+            exit:async()=>{
+                return await window.toast.prompt("Continue without saving?");
+            }
+        })[action]()
+    }
+    find(action) {
+        let components = [];
+        if (this.locks.hasOwnProperty(action)) components.push(this.comp);
+        for (let comp of this.comp.components) {
+            components = components.concat(comp.lock.find(action)||[]);
+        }
+        if (components.length>0) {
+            console.log(this.constructor.name);
+        }
+        return components.length>0?components:null;
+    }
+    add(action) {
+        this.locks[action] = true;
+    }
+    remove(action) {
+        if (this.locks.hasOwnProperty(action)) delete this.locks[action];
+    }
+    clear(action) {
+        if (action) this.remove(action);
+        else this.locks = {};
+        for (let comp of this.comp.components) comp.lock.clear(action);
     }
 }
