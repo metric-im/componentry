@@ -14,7 +14,7 @@
 .window {
     flex:0 0;
     border:1px solid var(--page-border);
-    background-color:var(--page-bg);
+    background-color:var(--bg-color);
 }
 .header {
     flex:30px 0;

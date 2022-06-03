@@ -6,7 +6,7 @@
     border:2px solid var(--status-normal);
     border-radius:var(--spacer);
     padding:var(--spacer2);
-    background-color:var(--page-bg);
+    background-color:var(--bg-color);
     width:20%;
     left:40%;
     top:-200px;
