@@ -11,7 +11,7 @@ export default class Toast extends Component {
     async render(element) {
         await super.render(element);
         this.window = this.div('display');
-        this.message = this.div(null,this.window);
+        this.message = this.div('message',this.window);
         this.controls = this.div('controls',this.window);
         this.okButton = document.createElement('button');
         this.okButton.innerHTML = "ok";

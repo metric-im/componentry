@@ -4,7 +4,7 @@
     align-items:center;
     position:absolute;
     border:2px solid var(--status-normal);
-    border-radius:var(--spacer);
+    border-radius:var(--spacer2);
     padding:var(--spacer2);
     background-color:var(--bg-color);
     width:20%;
@@ -28,6 +28,7 @@
 .display .message {
     flex:1 0;
     text-align:center;
+    color:var(--text-color);
 }
 .display .controls {
     display:none;
