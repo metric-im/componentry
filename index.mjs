@@ -49,7 +49,7 @@ export default class Componentry {
     routes() {
         let router = express.Router();
         router.use('/components/:component',(req,res)=>{
-            let level = req.account?req.account.level||0:0;
+            let level = req.account?(req.account.super?5:req.account.level)||0:0;
             res.set("Content-Type","text/javascript");
             let js = fs.readFileSync(this.components[req.params.component]).toString();
             js = js.replace(/\/\*ACL([<>]{1})(\d){1}\*\/(.*?)\/\*ENDACL\*\//gs,(match,op,acl,code)=>{
