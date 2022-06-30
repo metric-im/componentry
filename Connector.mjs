@@ -71,8 +71,10 @@ export default class Connector {
             return await this.db.collection('acl').bulkWrite(writes);
         }
         async function test(entity,resource) {
-            let id = Object.assign({},entity,resource);
-            let result = await this.db.collection('acl').findOne({_id:id})
+            let result = await this.db.collection('acl').findOne({
+                ["_id."+Object.keys(entity)[0]]:Object.values(entity)[0],
+                ["_id."+Object.keys(resource)[0]]:Object.values(resource)[0]
+            })
             return result?result.level:-1;
         }
         async function get(entity,resource,options) {
