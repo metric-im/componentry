@@ -14,16 +14,17 @@ export default class Connector {
      * @param profile PROD, DEV or STAGING
      * @returns Connector
      */
-    static async mint(profile) {
+    static async mint(profile={}) {
         let connector = new Connector(profile);
         if (profile.init) await profile.init();
-
-        connector.MongoClient = mongodb.MongoClient;
-        let mongo = await connector.MongoClient.connect(
-            connector.profile.mongo.host,
-            {useNewUrlParser:true,useUnifiedTopology:true}
-        );
-        connector.db = mongo.db();
+        if (profile.mongo) {
+            connector.MongoClient = mongodb.MongoClient;
+            let mongo = await connector.MongoClient.connect(
+                connector.profile.mongo.host,
+                {useNewUrlParser:true,useUnifiedTopology:true}
+            );
+            connector.db = mongo.db();
+        }
         return connector;
     }
     get acl() {
