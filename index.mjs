@@ -73,11 +73,12 @@ export default class Componentry {
             res.send(css);
         });
         router.get('/lib/:module/:path?',(req,res)=>{
-            let path = this.library[req.params.module];
-            if (req.params.path) path += req.params.path;
-            if (!path) return res.status(404).send();
+            let modulePath = this.library[req.params.module];
+            if (req.params.path) modulePath += req.params.path;
+            if (!modulePath) return res.status(404).send();
+            modulePath = path.resolve(modulePath);
             res.set("Content-Type","text/javascript");
-            res.sendFile(path);
+            res.sendFile(modulePath);
         });
         return router;
     }
