@@ -43,8 +43,10 @@ class Module {
      * @returns {string[]}
      */
     get absoluteLibrary() {
+        if (!this.rootPath) return {};
+        let path = this.rootPath.replace(/\/node_modules\/.*/,"")
         return Object.entries(this.library).reduce((result,[key,value])=>{
-            result[key] = this.rootPath+"/node_modules"+value;
+            result[key] = path+"/node_modules"+value;
             return result;
         },{})
     }
