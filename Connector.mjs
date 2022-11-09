@@ -4,8 +4,9 @@
 import IdForge from './components/IdForge.mjs';
 import mongodb from 'mongodb';
 export default class Connector {
-    constructor(profile) {
-        this.profile = profile;
+    constructor(componentry) {
+        this.componentry = componentry
+        this.profile = componentry.profile;
         this.idForge = IdForge;
     }
 
@@ -14,10 +15,10 @@ export default class Connector {
      * @param profile PROD, DEV or STAGING
      * @returns Connector
      */
-    static async mint(profile={}) {
-        let connector = new Connector(profile);
-        if (profile.init) await profile.init();
-        if (profile.mongo) {
+    static async mint(componentry) {
+        let connector = new Connector(componentry);
+        if (connector.profile.init) await connector.profile.init();
+        if (connector.profile.mongo) {
             connector.MongoClient = mongodb.MongoClient;
             let mongo = await connector.MongoClient.connect(
                 connector.profile.mongo.host,

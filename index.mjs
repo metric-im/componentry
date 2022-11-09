@@ -4,47 +4,90 @@ import Connector from './Connector.mjs';
 import path from "path";
 import {fileURLToPath} from "url";
 
+class Module {
+    constructor(connector,metaUrl) {
+        this.connector = connector
+        if (metaUrl) {
+            this.rootPath = path.dirname(fileURLToPath(metaUrl));
+            this.loadComponents();
+        }
+    }
+
+    /**
+     * Every module may offer a folder of client UI components. These
+     * components are available to all other modules. Modules loaded
+     * later in the init list may override components from previous
+     * modules.
+     * @returns void
+     */
+    loadComponents() {
+        this.components = {};
+        try {
+            let files = fs.readdirSync(this.rootPath+"/components");
+            for (let comp of files) this.components[comp] = this.rootPath+"/components/"+comp;
+        } catch(e) {}
+    }
+
+    /**
+     * Override to include paths to packages in node-modules. For example
+     * {'moment':'/moment/min/moment-with-locales.min.js'}
+     * enables client side scripts to import `/lib/moment`.
+     * @returns {{}}
+     */
+    get library() {
+        return {};
+    }
+
+    /**
+     * Provide full qualified paths to the library files
+     * @returns {string[]}
+     */
+    get absoluteLibrary() {
+        return Object.entries(this.library).reduce((result,[key,value])=>{
+            result[key] = this.rootPath+"/node_modules"+value;
+            return result;
+        },{})
+    }
+}
+class ComponentryModule extends Module {
+    constructor(connector) {
+        super(connector,import.meta.url);
+    }
+}
+
 export default class Componentry {
     constructor(app,profile,options) {
         this.profile = profile;
         this.options = options||{};
         this.modules = {};
         this.components = {};
-        this.library = {}
+        this.library = {};
         this.app = app;
-        this.rootPath = path.dirname(fileURLToPath(import.meta.url));
     }
+
+    /**
+     * Modules loaded by componentry should extend Componentry.Module;
+     * @type {*}
+     */
+    static Module = Module;
     /**
      * Load modules and their components.
      * @returns {Promise<void>}
      */
     async init() {
-        this.connector = await Connector.mint(this.profile);
-        this.connector.modules = this.modules;
-        // load root components
-        this.loadComponents(this.rootPath+'/components');
+        this.connector = await Connector.mint(this);
         // From arguments load modules, their components, routes and library
-        for (let module of Array.from(arguments)) {
+        let modules = Array.from(arguments);
+        modules.unshift(ComponentryModule);
+        for (let module of modules) {
             let instance = module.mint?(await module.mint(this.connector)):(new module(this.connector));
-            this.modules[module.name] = {module:instance,path:path.dirname(fileURLToPath(import.meta.url))};
-            this.loadComponents(instance.componentPath);
-            if (instance.routes) this.loadRoutes(instance.routes());
-            if (instance.library) this.loadLibrary(instance.library);
+            this.modules[module.name] = instance;
+            if (instance.components) Object.assign(this.components,instance.components);
+            if (instance.routes) this.app.use(instance.routes());
+            if (instance.library) Object.assign(this.library,instance.absoluteLibrary);
         }
-        this.loadRoutes(this.routes());
-        this.loadComponents(this.app.__dirname+"/components");
-    }
-    loadComponents(path) {
-        try {
-            let components = fs.readdirSync(path);
-            for (let comp of components) this.components[comp] = path+"/"+comp;
-        } catch(e) {}
-    }
-    loadLibrary(library) {
-        Object.assign(this.library,library)
-    }
-    loadRoutes(routes) {
-        this.app.use(routes);
+        // note the routes need the combined object set. The componentry module is only itself.
+        this.app.use(this.routes());
     }
     routes() {
         let router = express.Router();
