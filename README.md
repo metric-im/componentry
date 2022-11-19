@@ -2,6 +2,9 @@
 Componentry is a lightweight component harness built for expressjs that enables packages
 to mix routing paths, resources and client components into the host
 
+See also `metric-im/common-mixin`. Common mixin is a Componentry module that provides many common widgets
+such as tables and input fields.
+
 ## Usage
 ```js
 import express from 'express';
