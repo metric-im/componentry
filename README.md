@@ -89,10 +89,23 @@ of the host project is loaded, if it exists.
 Componentry includes a few of its own components. **Component.mjs**, is a super class that
 compoments should extend. It provides a number of common features useful to each component.
 
-All components must at least implement a method named `render()` which is expected to return
-a DOM element
+>NOTE: **IdForge.mjs** is an internal class, but may be useful for generating random id's
 
-**IdForge.mjs** is an internal class, but may be useful for generating random id's
+All components must at least implement a method named `render()` which expends to be given
+a DOM element on which to attach its features.
+
+```
+import Component from './Component.mjs'
+export default class MyComponent extends Component {
+    constructor(props) {
+        super(props);
+    }
+    async render(element) {
+        await super.render(element);
+        this.element.innerHTML = "hello";
+    }
+}
+```
 
 Invoking the static method Component.init() when the app loads will add two helpers to the
 window object, `window.toast` and `window.popup`
@@ -104,13 +117,13 @@ user with an "ok" or "cancel" message.
 ```js
 window.toast.[staust|warning|error|success](string message)
 window.prompt(string message)`
-``
+```
 
 #### Popup
 Popup provides a modal display that covers the screen. It expects a title, a DOM element and an optional
 array of buttons. Buttons are expected to e components themselves which are rendered in the popup.
 
-```
+```js
 let elem = document.createElement('DIV');
 elem.innerHTML = "hello";
 window.popup("say hello",elem);
