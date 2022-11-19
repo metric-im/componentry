@@ -25,8 +25,6 @@ await componentry.init(PackageA,PackageB,...);
 Profile can be used to initialize context and data such as a database handle through to
 all modules. Options are:
 
-* **acl** - integer, in the source code `/*ACL>X*/ ... /*ENDACL*/` can block of code that will be redacted if given ACL is less than X.
-
 ### componentry.init([modules...]) 
 Provide one or more modules as arguments. Modules can be referenced either as
 npm module names or relative paths from the root of the host project. The construction of a module is discussed below.
@@ -156,4 +154,20 @@ becomes
     margin:3px;
 }
 ```
+
+### Feature Redaction Based on ACL
+If the app attaches an `account` object to the request object, it can be used to filter component code delivered to the client
+demarked with `/*ACL>X*/ ... /*ENDACL*/`. Any code within the ACL block will be redacted if given account.level is less than X.
+
+For example, a request to the app for `/compoment/SomewhatSensitive.mjs` could contain elements only meant for certain users.
+The app is expected to have added an account object to the request which declares a `level` attribute, such as req.account.level=2.
+
+```
+async render(element) {
+    await super.render(element);
+    this.element.innerHTML = "<p>Hello</p>";
+    /*ACL>1*/ this.element.innerHTML += "<p>you are important</p>" /*ENDACL*/
+}
+```
+
 
