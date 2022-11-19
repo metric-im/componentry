@@ -45,6 +45,28 @@ It may also reference packages in node_modules which it would like to be made av
 A module that only provides routes could be a single file, such as MyModule.mjs.
 Most modules, however, are packaged in a folder with a subdirectory for client components.
 
+### Constructor
+The module constructor is passed the "connector" object which includes the profile provided to the Componentry
+constructor as well as the componentry instance itself. The class should extend the super class `Componentry.Module`.
+In order to support various constructs, pass the module path to the super class. This has to be provided from the
+source file for node to identify the relative location of the components folder. Use `import.meta.url`.
+
+```js
+import express from 'express';
+import Componentry from "@metric-im/componentry";
+
+export default class MyComponent extends Componentry.Module {
+    constructor(connector) {
+        super(connector,import.meta.url)
+    }
+    static async mint() {
+        return new MyComponent(connector)
+    }
+}
+```
+
+`mint()` is optional. It can be used if the class constructor needs to make asynchronous calls. Componentry will use `new` if it doesn't find ClassName.mint();
+
 ### module.Routes()
 
 If the module declares a method named routes() this is expected to return a router that will be merged into the
