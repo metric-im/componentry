@@ -24,6 +24,9 @@
 .display.success {
     border-color:var(--status-success);
 }
+.display.prompt {
+    border-color:var(--text-color);
+}
 
 .display .message {
     flex:1 0;
