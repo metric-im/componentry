@@ -2,7 +2,8 @@ import IdForge from './IdForge.mjs';
 
 export default class Component {
     constructor(props) {
-        this.props = props;
+        this.props = props || {};
+        this.props.data = this.props.data || {}
         this.element = document.createElement('div');
         this.element.id = IdForge.randomId();
         this.element.classList.add(this.constructor.name);
