@@ -11,6 +11,22 @@ export default class Component {
         this.lock = new Lock(this);
         this.hub=false;
     }
+
+    /**
+     * Create a component and attach it to the given element
+     * This is new() followed by render()
+     * @param comp component class
+     * @param props properties to instruct the rendering
+     * @param element DOM element to attach the component
+     */
+    async draw(Comp,props,element) {
+        let component = new Comp(props);
+        this.components.push(component);
+        component.parent = this;
+        await component.render(element);
+        return component;
+    }
+
     new(Comp,props) {
         let component = new Comp(props);
         this.components.push(component);
