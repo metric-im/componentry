@@ -108,10 +108,14 @@ export default class Componentry {
             let sheets = Object.keys(this.components).filter(fn => fn.endsWith('.css'));
             let css = sheets.reduce((r,name)=>{
                 let sheet = fs.readFileSync(this.components[name]).toString();
-                sheet = sheet.replace(/(^[A-Za-z>.#@*:].*){/mg,(base)=>{
+                sheet = sheet.replace(/(^[A-Za-z>.#*:].*){/mg,(base)=>{
                     base = base.split(',');
                     return base.map(b=>"."+name.slice(0,-4)+" "+b.replace(/^\.([\W]*{)/,"$1"))
                 })
+                // sheet = sheet.replace(/(^@media.*?)({(\n|.)*?\n})/mg,(all,media,block)=>{
+                //     block = block.replace(//)
+                //     return "hello "+media + block;
+                // })
                 return r+sheet+"\n";
             },"");
             res.set("Content-Type","text/css");
