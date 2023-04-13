@@ -10,39 +10,52 @@ export default class Toast extends Component {
     }
     async render(element) {
         await super.render(element);
-        this.window = this.div('display');
+        this.layout = this.div('layout');
+        this.window = this.div('display', this.layout);
         this.message = this.div('message',this.window);
         this.controls = this.div('controls',this.window);
         this.okButton = document.createElement('button');
-        this.okButton.innerHTML = "ok";
         this.controls.append(this.okButton)
         this.cancelButton = document.createElement('button');
-        this.cancelButton.innerHTML = "cancel";
         this.controls.append(this.cancelButton)
         window.toast = this;
     }
     display(message,flavor='status') {
+        this.close();
         this.message.innerHTML = message;
         this.window.classList.remove('status','warning','error','success','prompt');
         this.window.classList.add('active',flavor);
     }
     notify(message,flavor) {
+        this.close();
         this.display(message,flavor);
-        this.timer = setTimeout(this.close.bind(this),2500);
-        this.window.addEventListener('click',this.close.bind(this));
+        this.timer = setTimeout(this.close.bind(this), 2500);
+        this.window.addEventListener('click', this.clickHandler.bind(this));
     }
-    async prompt(message) {
+    async prompt(message, options) {
+        if(!options) options = {};
+        let ok_text = options.ok ? options.ok : "ok";
+        let cancel_text = options.cancel ? options.cancel : "cancel";
+
         return new Promise((resolve)=>{
             this.display(message,'prompt');
-            this.okButton.onclick = ()=>{
+            this.okButton.innerHTML = ok_text;
+            this.okButton.onclick = () => {
                 this.close();
                 resolve(true);
             };
-            this.cancelButton.onclick = ()=>{
+            this.cancelButton.innerHTML = cancel_text;
+            this.cancelButton.onclick = () => {
                 this.close();
                 resolve(false);
             };
         });
+    }
+    clickHandler() {
+        if(this.window.classList.contains("prompt")) {
+            return;
+        }
+        this.close();
     }
     close() {
         if (this.timer) {
