@@ -3,6 +3,7 @@ import express from "express";
 import Connector from './Connector.mjs';
 import path from "path";
 import {fileURLToPath} from "url";
+import jsonic from "jsonic"
 
 class Module {
     constructor(connector,metaUrl) {
@@ -39,6 +40,14 @@ class Module {
     }
 
     /**
+     * Each module can inject styles into the common page harness
+     * @returns {string[]}
+     */
+    get styles() {
+        return [];
+    }
+
+    /**
      * Provide full qualified paths to the library files
      * @returns {string[]}
      */
@@ -65,6 +74,7 @@ export default class Componentry {
         this.components = {};
         this.library = {};
         this.app = app;
+        this.styles = ['/styles/component.css'];
     }
 
     /**
@@ -81,9 +91,13 @@ export default class Componentry {
         // From arguments load modules, their components, routes and library
         let modules = Array.from(arguments);
         modules.unshift(ComponentryModule);
+        let styles = [];
         for (let module of modules) {
             let instance = module.mint?(await module.mint(this.connector)):(new module(this.connector));
             this.modules[module.name] = instance;
+            if (instance.styles && instance.styles.length > 0) {
+                for (let s of instance.styles) if (!this.styles.includes(s)) this.styles.push(s);
+            }
             if (instance.components) Object.assign(this.components,instance.components);
             if (instance.routes) this.app.use(instance.routes());
             if (instance.library) Object.assign(this.library,instance.absoluteLibrary);
@@ -91,8 +105,16 @@ export default class Componentry {
         // note the routes need the combined object set. The componentry module is only itself.
         this.app.use(this.routes());
     }
+
+    /**
+     * Componentry provides the core web requests for fetching components and styles.
+     * It is itself a component.
+     */
     routes() {
         let router = express.Router();
+        /**
+         * Used by the browser code to import components
+         */
         router.use('/components/:component',(req,res)=>{
             let level = req.account?(req.account.super?5:req.account.level)||0:0;
             res.set("Content-Type","text/javascript");
@@ -104,6 +126,9 @@ export default class Componentry {
             });
             res.send(js);
         });
+        /**
+         * Components CSS merges the CSS files of all components referenced by the client
+         */
         router.use('/styles/component.css',(req,res)=>{
             let sheets = Object.keys(this.components).filter(fn => fn.endsWith('.css'));
             let css = sheets.reduce((r,name)=>{
@@ -121,6 +146,9 @@ export default class Componentry {
             res.set("Content-Type","text/css");
             res.send(css);
         });
+        /**
+         * Lib paths are used to expose foreign modules to the browser.
+         */
         router.get('/lib/:module/:path?',(req,res)=>{
             let modulePath = this.library[req.params.module];
             if (req.params.path) modulePath += req.params.path;
@@ -129,6 +157,51 @@ export default class Componentry {
             res.set("Content-Type","text/javascript");
             res.sendFile(modulePath);
         });
+        /**
+         * Render will deliver a html page built by the requested component
+         */
+        router.get("/render/:component", async (req,res)=>{
+            try {
+                let props = jsonic(req.query.props||'{}')
+                let page = await this.render(req.params.component,props);
+                res.send(page);
+            } catch (e) {
+                res.status(500).json({status: 'error', message: `${e.message}`});
+            }
+        });
         return router;
+    }
+    async render(component,props) {
+        let html = this.template.replaceAll('{{comp}}',component);
+        html = html.replace('{{props}}',JSON.stringify(props));
+        html = html.replace('{{styles}}',this.styles.reduce((r,s)=>{
+            r = r + `<link type="text/css" rel="stylesheet" href="${s}">`
+            return r;
+        },""));
+        return html;
+    }
+    get template() {
+        return `
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    {{styles}}
+    <link rel="icon" href="favicon.ico">
+    <script src="/lib/moment"></script>
+    <script src="/lib/moment-timezone"></script>
+    <script type="module" lang="javascript">
+        import {{comp}} from '/components/{{comp}}.mjs';
+          let comp = new {{comp}}(JSON.parse('{{props}}'));
+        setTimeout(async ()=>{
+          await comp.render(document.body);
+        },100);
+    </script>
+</head>
+<body>
+</body>
+</html>
+`;
     }
 }

@@ -9,6 +9,7 @@
   "keywords": [],
   "dependencies": {
     "express": "^4.17.3",
+    "jsonic": "^1.0.1",
     "mongodb": "^4.6.0"
   }
 }
