@@ -10,6 +10,8 @@ class Module {
         this.connector = connector
         if (metaUrl) {
             this.rootPath = path.dirname(fileURLToPath(metaUrl));
+            let parts = this.rootPath.split('/')
+            this.moduleName = parts[parts.length-1];
             this.loadComponents();
         }
     }
@@ -40,15 +42,15 @@ class Module {
     }
 
     /**
-     * Each module can inject styles into the common page harness
+     * Each module can inject assets into the common page harness (images, fonts, css)
      * @returns {string[]}
      */
-    get styles() {
+    get assets() {
         return [];
     }
 
     /**
-     * Provide full qualified paths to the library files
+     * Provide fully qualified paths to the library files
      * @returns {string[]}
      */
     get absoluteLibrary() {
@@ -74,7 +76,7 @@ export default class Componentry {
         this.components = {};
         this.library = {};
         this.app = app;
-        this.styles = ['/styles/component.css'];
+        this.assets = [];
     }
 
     /**
@@ -84,6 +86,12 @@ export default class Componentry {
     static Module = Module;
     /**
      * Load modules and their components.
+     * Components are served after acl is applied. Modules can overwrite components
+     * loaded in earlier in init().
+     * Lib files allow node_modules to be extended to the browser with /lib
+     * If a component includes and "assets" folder this is routed as a static link
+     * in the form /componentClassName/assets/fileName. CSS files are additionally linked
+     * from the app index.html header to be available throughout the app.
      * @returns {Promise<void>}
      */
     async init() {
@@ -91,12 +99,20 @@ export default class Componentry {
         // From arguments load modules, their components, routes and library
         let modules = Array.from(arguments);
         modules.unshift(ComponentryModule);
-        let styles = [];
         for (let module of modules) {
-            let instance = module.mint?(await module.mint(this.connector)):(new module(this.connector));
+            let instance = await module.mint?(await module.mint(this.connector)):(new module(this.connector));
             this.modules[module.name] = instance;
-            if (instance.styles && instance.styles.length > 0) {
-                for (let s of instance.styles) if (!this.styles.includes(s)) this.styles.push(s);
+            let assetsFolderName = instance.rootPath+'/assets'
+            let assetsFolder = fs.existsSync(assetsFolderName)?fs.readdirSync(assetsFolderName):[];
+            let packageJson = await fs.readFileSync(instance.rootPath+'/package.json');
+            packageJson = JSON.parse(packageJson.toString());
+            for (let asset of assetsFolder) {
+                this.assets.push({
+                    fileName:asset,
+                    moduleName:packageJson.name.replace(/^\@[A-Za-z0-9.\-_]+\//,""),
+                    path:instance.rootPath+'/assets/'+asset,
+                    type:asset.match(/\.([a-z0-9]*$)/)[1]
+                })
             }
             if (instance.components) Object.assign(this.components,instance.components);
             if (instance.routes) this.app.use(instance.routes());
@@ -146,6 +162,26 @@ export default class Componentry {
             res.set("Content-Type","text/css");
             res.send(css);
         });
+        router.get('/styles/static.css',(req,res)=>{
+            try {
+                let css = "";
+                for (let s of this.assets.filter(record=>record.type==='css')) {
+                    let txt = fs.readFileSync(s.path).toString();
+                    css += `\n/* ${s.moduleName} */\n`+txt;
+                }
+                res.set("Content-Type","text/css");
+                res.send(css);
+            } catch(e) {
+                console.log(e.message)
+                res.status(404).send();
+            }
+        })
+        router.get('/:module/assets/:file',(req,res)=>{
+            let asset = this.assets.find(asset => asset.moduleName.toLowerCase() === req.params.module.toLowerCase()
+              && asset.fileName.toLowerCase() === req.params.file.toLowerCase());
+            if (asset) res.sendFile(asset.path);
+            else res.status(404).send();
+        })
         /**
          * Lib paths are used to expose foreign modules to the browser.
          */
@@ -174,10 +210,6 @@ export default class Componentry {
     async render(component,props) {
         let html = this.template.replaceAll('{{comp}}',component);
         html = html.replace('{{props}}',JSON.stringify(props));
-        html = html.replace('{{styles}}',this.styles.reduce((r,s)=>{
-            r = r + `<link type="text/css" rel="stylesheet" href="${s}">`
-            return r;
-        },""));
         return html;
     }
     get template() {
@@ -187,7 +219,8 @@ export default class Componentry {
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1.0">
-    {{styles}}
+    <link type="text/css" rel="stylesheet" href="/styles/component.css">
+    <link type="text/css" rel="stylesheet" href="/styles/static.css">
     <link rel="icon" href="favicon.ico">
     <script src="/lib/moment"></script>
     <script src="/lib/moment-timezone"></script>
