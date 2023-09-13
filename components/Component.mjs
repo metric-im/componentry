@@ -123,8 +123,8 @@ export default class Component {
             let o = {};
             for (let key of Object.keys(data)) {
                 if (!key.startsWith('__')) {
-                    if (Array.isArray(o[key])) o[key] = o[key].map(o=>loop(o));
-                    else if (typeof o[key] === 'object') o[key] = loop(o[key]);
+                    if (Array.isArray(data[key])) o[key] = data[key].map(o=>loop(o));
+                    else if (typeof data[key] === 'object') o[key] = loop(data[key]);
                     else  o[key] = data[key];
                 }
             }
