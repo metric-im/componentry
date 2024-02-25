@@ -219,6 +219,7 @@ export default class Componentry {
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <meta name="referrer" content="strict-origin-when-cross-origin" />
     <link type="text/css" rel="stylesheet" href="/styles/component.css">
     <link type="text/css" rel="stylesheet" href="/styles/static.css">
     <link rel="icon" href="favicon.ico">
