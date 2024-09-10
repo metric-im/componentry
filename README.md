@@ -138,8 +138,8 @@ Toast is used to send a brief notification message to the screen. It can also be
 user with an "ok" or "cancel" message.
 
 ```js
-window.toast.[staust|warning|error|success](string message)
-window.prompt(string message)`
+window.toast.[status|warning|error|success](string message)
+window.prompt(string message)
 ```
 
 #### Popup
