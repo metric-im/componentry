@@ -18,7 +18,9 @@ export default class Connector {
     static async mint(componentry) {
         let connector = new Connector(componentry);
         if (connector.profile.init) await connector.profile.init();
-        if (connector.profile.mongo) {
+        if (componentry.db) {
+            connector.db = componentry.db
+        } else if (connector.profile.mongo) {
             connector.MongoClient = mongodb.MongoClient;
             let mongo = await connector.MongoClient.connect(
                 connector.profile.mongo.host,

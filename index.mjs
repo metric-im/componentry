@@ -4,6 +4,7 @@ import Connector from './Connector.mjs';
 import path from "path";
 import {fileURLToPath} from "url";
 import jsonic from "jsonic"
+import IdForge from "./components/IdForge.mjs"
 
 class Module {
     constructor(connector,metaUrl) {
@@ -84,6 +85,17 @@ export default class Componentry {
      * @type {*}
      */
     static Module = Module;
+
+    /**
+     * Expose the common id generator. IdForge provides datedId() and randomId()
+     @type {*}
+     */
+    static IdForge = IdForge;
+    /**
+     * Expose the connector for API clients
+     * @type {*}
+     */
+    static Connector = Connector;
     /**
      * Load modules and their components.
      * Components are served after acl is applied. Modules can overwrite components
