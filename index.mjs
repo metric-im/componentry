@@ -95,7 +95,9 @@ export default class Componentry {
      * Expose the connector for API clients
      * @type {*}
      */
-    static Connector = Connector;
+    static get Connector() {
+        return Connector;
+    }
     /**
      * Load modules and their components.
      * Components are served after acl is applied. Modules can overwrite components
