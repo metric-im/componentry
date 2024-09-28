@@ -8,7 +8,7 @@ such as tables and input fields.
 ## Usage
 ```js
 import express from 'express';
-import Componentry from '@metric-im/Componentry'
+import Componentry from '@metric-im/componentry'
 import Profile from './profile.mjs' // shared resources such as a database connection
 import PackageA from 'PackageA'; // module imported through npm
 import PackageB from './modules/PackageA/index.mjs'; // module imported through relative path
