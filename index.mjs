@@ -90,7 +90,12 @@ export default class Componentry {
      * Expose the common id generator. IdForge provides datedId() and randomId()
      @type {*}
      */
-    static IdForge = IdForge;
+    static get IdForge() {
+        return IdForge;
+    }
+    get IdForge() {
+        return Componentry.IdForge;
+    }
     /**
      * Expose the connector for API clients
      * @type {*}
