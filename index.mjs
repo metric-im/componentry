@@ -127,11 +127,12 @@ export default class Componentry {
                 let text = await fs.readFileSync(instance.rootPath+'/package.json');
                 let packageJson = JSON.parse(text.toString());
                 for (let asset of assetsFolder) {
+                    let type = asset.match(/\.([a-z0-9]*$)/)
                     this.assets.push({
                         fileName:asset,
                         moduleName:packageJson.name.replace(/^\@[A-Za-z0-9.\-_]+\//,""),
                         path:instance.rootPath+'/assets/'+asset,
-                        type:asset.match(/\.([a-z0-9]*$)/)[1]
+                        type:type?type[1]:null
                     })
                 }
             }
