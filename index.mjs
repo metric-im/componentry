@@ -4,7 +4,6 @@ import Connector from './Connector.mjs';
 import path from "path";
 import {fileURLToPath} from "url";
 import jsonic from "jsonic"
-import IdForge from "./components/IdForge.mjs"
 
 class Module {
     constructor(connector,metaUrl) {
@@ -85,24 +84,6 @@ export default class Componentry {
      * @type {*}
      */
     static Module = Module;
-
-    /**
-     * Expose the common id generator. IdForge provides datedId() and randomId()
-     @type {*}
-     */
-    static get IdForge() {
-        return IdForge;
-    }
-    get IdForge() {
-        return Componentry.IdForge;
-    }
-    /**
-     * Expose the connector for API clients
-     * @type {*}
-     */
-    static get Connector() {
-        return Connector;
-    }
     /**
      * Load modules and their components.
      * Components are served after acl is applied. Modules can overwrite components
@@ -119,7 +100,7 @@ export default class Componentry {
         let modules = Array.from(arguments);
         modules.unshift(ComponentryModule);
         for (let module of modules) {
-            let instance = await module.mint?(await module.mint(this.connector)):(new module(this.connector));
+            let instance = await module.mint?(await module.mint(this.connector, this.options)):(new module(this.connector, this.options));
             this.modules[module.name] = instance;
             let assetsFolderName = instance.rootPath+'/assets'
             let assetsFolder = fs.existsSync(assetsFolderName)?fs.readdirSync(assetsFolderName):[];
@@ -127,12 +108,11 @@ export default class Componentry {
                 let text = await fs.readFileSync(instance.rootPath+'/package.json');
                 let packageJson = JSON.parse(text.toString());
                 for (let asset of assetsFolder) {
-                    let type = asset.match(/\.([a-z0-9]*$)/)
                     this.assets.push({
                         fileName:asset,
                         moduleName:packageJson.name.replace(/^\@[A-Za-z0-9.\-_]+\//,""),
                         path:instance.rootPath+'/assets/'+asset,
-                        type:type?type[1]:null
+                        type:asset.match(/\.([a-z0-9]*$)/)[1]
                     })
                 }
             }
@@ -174,9 +154,11 @@ export default class Componentry {
                 sheet = sheet.replace(/(^[A-Za-z>.#*:].*){/mg,(base)=>{
                     base = base.split(',');
                     return base.map(b=>"."+name.slice(0,-4)+" "+b.replace(/^\.([\W]*{)/,"$1"))
-                });
-                // begin line with a carat to declare global styles
-                sheet = sheet.replace(/^\^\s*/mg,'');
+                })
+                // sheet = sheet.replace(/(^@media.*?)({(\n|.)*?\n})/mg,(all,media,block)=>{
+                //     block = block.replace(//)
+                //     return "hello "+media + block;
+                // })
                 return r+sheet+"\n";
             },"");
             res.set("Content-Type","text/css");
@@ -198,7 +180,7 @@ export default class Componentry {
         })
         router.get('/:module/assets/:file',(req,res)=>{
             let asset = this.assets.find(asset => asset.moduleName.toLowerCase() === req.params.module.toLowerCase()
-              && asset.fileName.toLowerCase() === req.params.file.toLowerCase());
+                && asset.fileName.toLowerCase() === req.params.file.toLowerCase());
             if (asset) res.sendFile(asset.path);
             else res.status(404).send();
         })
@@ -239,7 +221,6 @@ export default class Componentry {
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1.0">
-    <meta name="referrer" content="strict-origin-when-cross-origin">
     <link type="text/css" rel="stylesheet" href="/styles/component.css">
     <link type="text/css" rel="stylesheet" href="/styles/static.css">
     <link rel="icon" href="favicon.ico">
