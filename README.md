@@ -17,10 +17,11 @@ let app = express();
 let componentry = new Componentry(app,await Profile());
 await componentry.init(PackageA,PackageB,...); 
 ```
-### constructor(app,profile)
+### constructor(app,profile,options)
 
 * **app** is the instance of express. Componentry will add routes with `app.use()`
 * **profile** is an arbitrary object of state data that is available to each component as `this.connector.profile`.
+* **options** an optional object that will be passed to each module provided to *init()* as the second parameter 
 
 Profile can be used to initialize context and data such as a database handle through to
 all modules. Options are:

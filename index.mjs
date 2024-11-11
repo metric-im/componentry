@@ -119,7 +119,7 @@ export default class Componentry {
         let modules = Array.from(arguments);
         modules.unshift(ComponentryModule);
         for (let module of modules) {
-            let instance = await module.mint?(await module.mint(this.connector)):(new module(this.connector));
+            let instance = await module.mint?(await module.mint(this.connector, this.options)):(new module(this.connector, this.options));
             this.modules[module.name] = instance;
             let assetsFolderName = instance.rootPath+'/assets'
             let assetsFolder = fs.existsSync(assetsFolderName)?fs.readdirSync(assetsFolderName):[];
@@ -198,7 +198,7 @@ export default class Componentry {
         })
         router.get('/:module/assets/:file',(req,res)=>{
             let asset = this.assets.find(asset => asset.moduleName.toLowerCase() === req.params.module.toLowerCase()
-              && asset.fileName.toLowerCase() === req.params.file.toLowerCase());
+                && asset.fileName.toLowerCase() === req.params.file.toLowerCase());
             if (asset) res.sendFile(asset.path);
             else res.status(404).send();
         })
