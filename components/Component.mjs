@@ -124,6 +124,7 @@ export default class Component {
             for (let key of Object.keys(data)) {
                 if (!key.startsWith('__')) {
                     if (Array.isArray(data[key])) o[key] = data[key].map(o=>loop(o));
+                    else if (data[key] === null) o[key] = null;
                     else if (typeof data[key] === 'object') o[key] = loop(data[key]);
                     else  o[key] = data[key];
                 }
