@@ -140,6 +140,14 @@ export default class Componentry {
             if (instance.routes) this.app.use(instance.routes());
             if (instance.library) Object.assign(this.library,instance.absoluteLibrary);
         }
+
+        for (let module of Object.values(this.modules)) {
+            try {
+                if (module.postMint) await module.postMint();
+            } catch(e) {
+                console.warn(`Module ${module.name}.postMint failed with ${e.message}`);
+            }
+        }
         // note the routes need the combined object set. The componentry module is only itself.
         this.app.use(this.routes());
     }
