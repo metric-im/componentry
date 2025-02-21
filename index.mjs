@@ -213,12 +213,14 @@ export default class Componentry {
         /**
          * Lib paths are used to expose foreign modules to the browser.
          */
-        router.get('/lib/:module/:path?',(req,res)=>{
+        router.get('/lib/:module*',(req,res)=>{
             let modulePath = this.library[req.params.module];
-            if (req.params.path) modulePath += req.params.path;
+            if (req.params[0]) modulePath += req.params[0];
             if (!modulePath) return res.status(404).send();
             modulePath = path.resolve(modulePath);
-            res.set("Content-Type","text/javascript");
+            let ext = modulePath.substr(modulePath.lastIndexOf('.') + 1);
+            let type = {css:'text/css',js:'text/javascript',html:'text/html'}[ext];
+            if (type) res.set("Content-Type",type);
             res.sendFile(modulePath);
         });
         /**
