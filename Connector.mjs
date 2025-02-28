@@ -1,5 +1,12 @@
 /**
- * Connect to the database and account, if authorization is provided
+ * Connect to the database and account, if authorization is provided.
+ *
+ * Connect uses the componentry profile as input. These are attributes that need to
+ * be shared with other application modules. If the profile includes
+ * a "mongo.host" element, the value is a connection string or a structure of
+ * connection strings. The resulting connection is assign to connector.db, or
+ * if host is a structure, then for each entry, connector.[name] = connection to [value].
+ * If componenty already includes db, the mongo attribute is ignored.
  */
 import IdForge from './components/IdForge.mjs';
 import mongodb from 'mongodb';
@@ -20,13 +27,13 @@ export default class Connector {
         if (connector.profile.init) await connector.profile.init();
         if (componentry.db) {
             connector.db = componentry.db
-        } else if (connector.profile.mongo) {
+        } else if (connector.profile.mongo?.host) {
+            let host = connector.profile.mongo.host;
             connector.MongoClient = mongodb.MongoClient;
-            let mongo = await connector.MongoClient.connect(
-                connector.profile.mongo.host,
-                {useNewUrlParser:true,useUnifiedTopology:true}
-            );
-            connector.db = mongo.db();
+            for (let [name,value] of (typeof host === 'string')?[['db',host]]:Object.entries(host)) {
+                let mongo = await connector.MongoClient.connect(value,{useUnifiedTopology:true});
+                connector[name] = mongo.db();
+            }
         }
         return connector;
     }
