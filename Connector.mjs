@@ -31,8 +31,8 @@ export default class Connector {
             let host = connector.profile.mongo.host;
             connector.MongoClient = mongodb.MongoClient;
             for (let [name,value] of (typeof host === 'string')?[['db',host]]:Object.entries(host)) {
-                let mongo = await connector.MongoClient.connect(value);
-                connector[name] = mongo.db();
+                connector.mongo = await connector.MongoClient.connect(value);
+                connector[name] = connector.mongo.db();
             }
         }
         return connector;
