@@ -57,7 +57,7 @@ class Module {
     get absoluteLibrary() {
         if (!this.rootPath) return {};
         return Object.entries(this.library).reduce((result,[key,value])=>{
-            result[key] = this.rootPath+"/node_modules"+value;
+            result[key] = process.cwd()+"/node_modules"+value;
             return result;
         },{})
     }
