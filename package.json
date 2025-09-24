@@ -1,6 +1,6 @@
 {
   "name": "@metric-im/componentry",
-  "version": "1.4.5",
+  "version": "1.4.6",
   "description": "Runtime framework for merging metric modules",
   "main": "index.mjs",
   "scripts": {},
