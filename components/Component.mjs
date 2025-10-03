@@ -60,21 +60,17 @@ export default class Component {
         return div;
     }
     /**
-     * Declare an event listener to execute an action if this component or
-     * any children fire the event of the same name.
+     * Declare an event listener to execute an action if any component within
+     * the hub fires the named event
      *
      * @param event the name of the event to act on. This is an arbitrary string.
      * @param action a function to execute
      */
     on(event,action) {
         let args = Array.from(arguments).splice(2);
-        this.watchers[event] = this.watchers[event] || [];
-        this.watchers[event].push(action.bind(this,...args));
-        for (let w of this.components) {
-            w.on(event,action.bind(this,...args));
-            // w.watchers[event] = w.watchers[event] || [];
-            // w.watchers[event].push(action.bind(this,...args));
-        }
+        let hubComponent = this.getHub();
+        hubComponent.watchers[event] = hubComponent.watchers[event] || [];
+        hubComponent.watchers[event].push(action.bind(hubComponent,...args));
     }
 
     /**
@@ -84,8 +80,9 @@ export default class Component {
      */
     fire(event) {
         let args = Array.from(arguments).splice(1);
-        if (this.watchers[event]) {
-            for (let w of this.watchers[event]) {
+        let hubComponent = this.getHub();
+        if (hubComponent?.watchers[event]) {
+            for (let w of hubComponent.watchers[event]) {
                 w(...args);
             }
         }
@@ -97,17 +94,27 @@ export default class Component {
         this.element.style.display = 'none';
     }
     async announceUpdate(attributeName) {
-        let hubComponent = this;
-        while (hubComponent && !hubComponent.hub) {
-            if (hubComponent.parent && hubComponent.parent === hubComponent) hubComponent = null;
-            hubComponent = hubComponent.parent;
-        }
+        let hubComponent = this.getHub();
         if (hubComponent) await hubComponent.handleUpdate(attributeName);
     }
     async handleUpdate(attributeName) {
         for (let comp of this.components) {
             if (comp.handleUpdate) await comp.handleUpdate(attributeName);
         }
+    }
+
+    /**
+     *  Traverse up the parent tree to locate a hub component or settle on self
+     *
+     */
+    getHub() {
+      let hubComponent = this;
+      while (hubComponent && !hubComponent.hub) {
+        let test = (hubComponent.parent && hubComponent.parent !== hubComponent)?hubComponent.parent:null;
+        if (test) hubComponent = test
+        else break;
+      }
+      return hubComponent;
     }
 
 
